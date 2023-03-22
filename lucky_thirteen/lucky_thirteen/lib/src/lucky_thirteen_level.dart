@@ -5,6 +5,7 @@ import 'package:crossbow_backend/extensions.dart';
 import 'package:ziggurat/levels.dart';
 import 'package:ziggurat/ziggurat.dart';
 
+import '../assets.dart';
 import 'movement_direction.dart';
 
 /// Asset reference IDs for numbers.
@@ -63,6 +64,19 @@ class LuckyThirteenLevel extends Level {
   /// The selected points.
   final List<Point<int>> selectedPoints;
 
+  /// Get the sum of the [selectedPoints].
+  int get totalNumber {
+    var n = 0;
+    for (final point in selectedPoints) {
+      final column = numbers[point.x][point.y];
+      if (column.isEmpty) {
+        return max(13, n);
+      }
+      n += column.last;
+    }
+    return n;
+  }
+
   /// Stop the player moving.
   void stop() {
     direction = MovementDirection.stationary;
@@ -106,7 +120,64 @@ class LuckyThirteenLevel extends Level {
           onStop: stop,
         ),
       );
+      final selectCommandTrigger = await commandsDao.getCommandTrigger(id: 5);
+      registerCommand(
+        selectCommandTrigger.name,
+        Command(
+          onStart: select,
+        ),
+      );
+      await move(coordinates);
     }
+  }
+
+  /// Select the current cell.
+  Future<void> select() async {
+    if (selectedPoints.contains(coordinates)) {
+      await runner.playSound(deselectSound);
+      selectedPoints.remove(coordinates);
+    } else {
+      selectedPoints.add(coordinates);
+      final n = totalNumber;
+      if (n < 13) {
+        await runner.playSound(selectSound);
+      } else if (n > 13) {
+        await runner.playSound(loseSound);
+        for (final point in selectedPoints) {
+          numbers[point.x][point.y].add(game.random.nextInt(12) + 1);
+        }
+        selectedPoints.clear();
+      } else {
+        // We have 13.
+        await runner.playSound(winSound);
+        for (final point in selectedPoints) {
+          final column = numbers[point.x][point.y];
+          if (column.isNotEmpty) {
+            column.removeLast();
+          }
+        }
+        selectedPoints.clear();
+        for (var x = 0; x < size; x++) {
+          for (var y = 0; y < size; y++) {
+            final column = numbers[x][y];
+            if (column.isNotEmpty) {
+              return;
+            }
+          }
+        }
+        await won();
+      }
+    }
+  }
+
+  /// The player has won.
+  Future<void> won() async {
+    await runner.playSound(wonSound);
+    game
+      ..popLevel()
+      ..popLevel(ambianceFadeTime: 3.0);
+    final command = await runner.db.commandsDao.getCommand(id: 1);
+    game.callAfter(func: () => runner.handleCommand(command), runAfter: 3000);
   }
 
   /// Populate the [numbers] list.
@@ -130,19 +201,16 @@ class LuckyThirteenLevel extends Level {
   Future<void> move(final Point<int> point) async {
     final x = point.x, y = point.y;
     if (x < 0 || y < 0 || x >= size || y >= size) {
-      final wall = await runner.getAssetReferenceFromId(2);
-      game.interfaceSounds.playSound(assetReference: wall);
+      await runner.playSound(wallSound);
     } else {
       coordinates = Point(x, y);
       final column = numbers[x][y];
       if (column.isEmpty) {
-        final wild = await runner.getAssetReferenceFromId(36);
-        game.interfaceSounds.playSound(assetReference: wild);
+        await runner.playSound(wildSound);
       } else {
         final number = column.last;
         final id = numberAssetReferenceIds[number];
-        final assetReference = await runner.getAssetReferenceFromId(id);
-        game.interfaceSounds.playSound(assetReference: assetReference);
+        await runner.playSound(id);
       }
     }
   }
