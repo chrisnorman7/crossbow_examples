@@ -1,0 +1,15 @@
+name: lucky_thirteen
+description: A game created with the Crossbow game engine.
+
+environment:
+  sdk: '>=2.19.0 <4.0.0'
+
+dependencies:
+  crossbow_backend:
+    git:
+      url: https://github.com/chrisnorman7/crossbow
+      path: crossbow_backend
+      ref: 9359065889e35cfb
+  dart_sdl: ^0.10.1
+  lints: ^2.0.1
+  ziggurat: ^0.58.0

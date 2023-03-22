@@ -1,0 +1,9 @@
+{
+  "projectName": "Lucky Thirteen",
+  "appName": "lucky_thirteen",
+  "orgName": "site.backstreets",
+  "databaseFilename": "db.sqlite3",
+  "assetsDirectory": "assets",
+  "initialCommandId": 1,
+  "framesPerSecond": 60
+}
