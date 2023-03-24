@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:crossbow_backend/crossbow_backend.dart' hide Command;
-import 'package:crossbow_backend/extensions.dart';
 import 'package:ziggurat/levels.dart';
 import 'package:ziggurat/ziggurat.dart';
 
@@ -85,44 +84,55 @@ class LuckyThirteenLevel extends Level {
   /// Register [commands].
   Future<void> registerCommands() async {
     if (commands.isEmpty) {
-      final commandsDao = runner.db.commandTriggersDao;
-      final forwardsCommandTrigger = await commandsDao.getCommandTrigger(id: 1);
-      final backwardsCommandTrigger = await commandsDao.getCommandTrigger(
-        id: 2,
+      final commandTriggersDao = runner.db.commandTriggersDao;
+      final forwardsCommandTriggerName =
+          await commandTriggersDao.getCommandTriggerName(commandTriggerId: 1);
+      final backwardsCommandTriggerName =
+          await commandTriggersDao.getCommandTriggerName(
+        commandTriggerId: 2,
       );
-      final leftCommandTrigger = await commandsDao.getCommandTrigger(id: 3);
-      final rightCommandTrigger = await commandsDao.getCommandTrigger(id: 4);
+      final leftCommandTriggerName =
+          await commandTriggersDao.getCommandTriggerName(
+        commandTriggerId: 3,
+      );
+      final rightCommandTriggerName =
+          await commandTriggersDao.getCommandTriggerName(
+        commandTriggerId: 4,
+      );
       registerCommand(
-        forwardsCommandTrigger.name,
+        forwardsCommandTriggerName,
         Command(
           onStart: () => direction = MovementDirection.forwards,
           onStop: stop,
         ),
       );
       registerCommand(
-        backwardsCommandTrigger.name,
+        backwardsCommandTriggerName,
         Command(
           onStart: () => direction = MovementDirection.backwards,
           onStop: stop,
         ),
       );
       registerCommand(
-        leftCommandTrigger.name,
+        leftCommandTriggerName,
         Command(
           onStart: () => direction = MovementDirection.left,
           onStop: stop,
         ),
       );
       registerCommand(
-        rightCommandTrigger.name,
+        rightCommandTriggerName,
         Command(
           onStart: () => direction = MovementDirection.right,
           onStop: stop,
         ),
       );
-      final selectCommandTrigger = await commandsDao.getCommandTrigger(id: 5);
+      final selectCommandTriggerName =
+          await commandTriggersDao.getCommandTriggerName(
+        commandTriggerId: 5,
+      );
       registerCommand(
-        selectCommandTrigger.name,
+        selectCommandTriggerName,
         Command(
           onStart: select,
         ),

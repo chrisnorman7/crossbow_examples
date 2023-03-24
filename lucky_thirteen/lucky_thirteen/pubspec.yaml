@@ -9,7 +9,7 @@ dependencies:
     git:
       url: https://github.com/chrisnorman7/crossbow
       path: crossbow_backend
-      ref: e8c92c
+      ref: c76994
   dart_sdl: ^0.10.1
   lints: ^2.0.1
-  ziggurat: ^0.58.0
+  ziggurat: ^0.59.1
